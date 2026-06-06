@@ -1,17 +1,18 @@
 package main
 
 import (
-	"os"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
 	"go-better-api/internal/database"
+	"go-better-api/internal/handlers"
 
 	appauth "go-better-api/internal/auth"
 
-	"github.com/sirupsen/logrus"
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 var logger = logrus.New()
@@ -31,8 +32,6 @@ func main() {
 	initLogger()
 
 	logger.Info("Starting go-better-api server")
-
-
 
 	// JWT auth helper available via appauth.GenerateToken / appauth.ValidateToken
 	_ = appauth.ErrInvalidToken // ensure auth package is imported
@@ -56,7 +55,6 @@ func main() {
 	}
 	addr := host + ":" + port
 
-
 	// Create Gin router
 	r := gin.Default()
 	r.Use(func(c *gin.Context) {
@@ -69,7 +67,6 @@ func main() {
 		}
 		c.Next()
 	})
-
 
 	// Health check endpoint
 	r.GET("/health", func(c *gin.Context) {
@@ -85,6 +82,18 @@ func main() {
 			"message": "Welcome to go-better-api!",
 		})
 	})
+
+	api := r.Group("/api")
+	api.GET("/users", handlers.GetUsers)
+	api.POST("/users", handlers.CreateUser)
+	api.GET("/users/:id", handlers.GetUser)
+	api.PUT("/users/:id", handlers.UpdateUser)
+	api.DELETE("/users/:id", handlers.DeleteUser)
+	api.GET("/posts", handlers.GetPosts)
+	api.POST("/posts", handlers.CreatePost)
+	api.GET("/posts/:id", handlers.GetPost)
+	api.PUT("/posts/:id", handlers.UpdatePost)
+	api.DELETE("/posts/:id", handlers.DeletePost)
 
 	// Start server
 	if err := r.Run(addr); err != nil {
